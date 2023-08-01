@@ -48,8 +48,7 @@ class GRecaptchaV3PlatformInterface {
       default:
         throw PlatformException(
           code: 'Unimplemented',
-          details:
-              'g_recaptcha_v3 for web doesn\'t implement \'${call.method}\'',
+          details: 'g_recaptcha_v3 for web doesn\'t implement \'${call.method}\'',
         );
     }
   }
@@ -79,8 +78,7 @@ class GRecaptchaV3PlatformInterface {
       throw Exception('gRecaptcha V3 key not set : Try calling ready() first.');
     }
     try {
-      String? result = await js_util.promiseToFuture<String>(
-          await _execute(_gRecaptchaV3Key, _Options(action: action)));
+      String? result = await js_util.promiseToFuture<String>(await _execute(_gRecaptchaV3Key, _Options(action: action)));
       return result;
     } catch (e) {
       debugPrint(e.toString());
@@ -90,11 +88,21 @@ class GRecaptchaV3PlatformInterface {
   }
 
   /// change the reCaptcha badge visibility
-  static Future<void> changeVisibility(bool showBagde) async {
+  static Future<void> changeVisibility(bool showBadge) async {
     if (!kIsWeb) return;
-    var badge = html.document.querySelector(".grecaptcha-badge");
-    if (badge == null) return;
-    badge.style.zIndex = "10";
-    badge.style.visibility = showBagde ? "visible" : "hidden";
+    final badgeStyles = _badgeStyle;
+    badgeStyles.innerText = '.grecaptcha-badge { z-index: 10; visibility: ${showBadge ? "visible" : "hidden"}; }';
+  }
+
+  static html.StyleElement get _badgeStyle {
+    var badgeStyles = html.document.getElementById("g_recaptcha_v3") as html.StyleElement?;
+
+    if (badgeStyles == null) {
+      badgeStyles = html.document.createElement("style") as html.StyleElement;
+      badgeStyles.id = "g_recaptcha_v3";
+      html.document.head?.append(badgeStyles);
+    }
+
+    return badgeStyles;
   }
 }
